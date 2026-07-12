@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockPredict AI — S&P 500 Price Prediction</title>
+    <meta name="description" content="AI-powered S&P 500 stock price prediction using Random Forest Classifiers with real-time data and explainable reasoning.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- TOP NAV -->
+    <header class="top-nav">
+        <div class="nav-inner">
+            <div class="brand" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                <svg class="brand-logo-svg" viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 24L12 16L17 20L28 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 16L20 9" stroke="#494fdf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 9H20V13" stroke="#494fdf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="brand-name">StockPredict<span class="brand-accent">AI</span></span>
+                <span class="brand-badge">S&amp;P 500</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#search-section" class="nav-link">Search</a>
+                <a href="#results-section" class="nav-link">Analysis</a>
+                <a href="#backtest-section" class="nav-link">Backtest</a>
+                <a href="#model-section" class="nav-link">Model</a>
+            </nav>
+            <div class="nav-actions">
+                <a href="#search-section" class="btn-primary button-lbl-sm">Predict Now</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SEARCH SECTION -->
+    <section id="search-section" class="hero-section">
+        <div class="hero-inner">
+            <div class="hero-badge">
+                <span class="pulse-dot"></span>
+                S&amp;P 500 Constituents Only
+            </div>
+            <h1 class="hero-title display-xl">Predict Any <span class="gradient-text">S&amp;P 500</span> Stock</h1>
+            <p class="hero-subtitle body-lg">Type a company name or ticker — get AI-powered price direction prediction backed by real market data and explainable reasoning.</p>
+
+            <!-- SEARCH BOX -->
+            <div class="search-container" id="search-container">
+                <div class="search-box" id="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input
+                        type="text"
+                        id="ticker-input"
+                        placeholder="Search S&amp;P 500 stock — e.g. Apple, Tesla, NVDA..."
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                    <button id="search-btn" class="search-run-btn">
+                        <i class="fa-solid fa-bolt"></i>
+                        Analyze
+                    </button>
+                </div>
+                <!-- AUTOCOMPLETE DROPDOWN -->
+                <div class="autocomplete-dropdown" id="autocomplete-dropdown"></div>
+            </div>
+
+            <!-- POPULAR STOCKS CHIPS -->
+            <div class="quick-chips">
+                <span class="chip-label">Popular:</span>
+                <button class="chip" data-ticker="AAPL">AAPL</button>
+                <button class="chip" data-ticker="MSFT">MSFT</button>
+                <button class="chip" data-ticker="NVDA">NVDA</button>
+                <button class="chip" data-ticker="TSLA">TSLA</button>
+                <button class="chip" data-ticker="AMZN">AMZN</button>
+                <button class="chip" data-ticker="META">META</button>
+                <button class="chip" data-ticker="^GSPC">^GSPC</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESULTS SECTION (hidden until search) -->
+    <section id="results-section" class="results-section hidden">
+
+        <!-- BAND 1: Stock Info Bar (White Catalogue Band) -->
+        <div class="stock-info-band reveal">
+            <div class="band-inner">
+                <div class="stock-info-inner">
+                    <div class="stock-identity">
+                        <div class="stock-symbol-badge" id="stock-symbol-badge">AAPL</div>
+                        <div class="stock-name-area">
+                            <h2 class="stock-full-name" id="stock-full-name">Apple Inc.</h2>
+                            <div class="data-source-badge" id="data-source-badge">
+                                <span class="ds-dot"></span>
+                                <span id="ds-label">Live Data</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stock-stats-row">
+                        <div class="stat-item">
+                            <span class="stat-label">Current Price</span>
+                            <span class="stat-value mono" id="live-price">—</span>
+                            <span class="stat-change" id="live-change">—</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Day Open</span>
+                            <span class="stat-value mono" id="stock-open">—</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Day High</span>
+                            <span class="stat-value mono" id="stock-high">—</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Day Low</span>
+                            <span class="stat-value mono" id="stock-low">—</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Volume</span>
+                            <span class="stat-value mono" id="stock-volume">—</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">52W Range</span>
+                            <div class="range-bar-container">
+                                <span class="range-low mono" id="week52-low">—</span>
+                                <div class="range-track">
+                                    <div class="range-fill" id="week52-bar"></div>
+                                </div>
+                                <span class="range-high mono" id="week52-high">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BAND 2: Chart & Prediction Grid (Dark Storytelling Band) -->
+        <div class="chart-prediction-band reveal">
+            <div class="band-inner">
+                <div class="main-grid">
+
+                    <!-- LEFT: PRICE CHART -->
+                    <div class="chart-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Historical Price</h3>
+                                <p class="panel-sub" id="chart-data-note">Real-time data from Yahoo Finance</p>
+                            </div>
+                            <div class="timeframe-tabs">
+                                <button class="tf-btn" data-period="1mo">1M</button>
+                                <button class="tf-btn" data-period="6mo">6M</button>
+                                <button class="tf-btn active" data-period="1y">1Y</button>
+                                <button class="tf-btn" data-period="5y">5Y</button>
+                                <button class="tf-btn" data-period="max">MAX</button>
+                            </div>
+                        </div>
+                        <div class="chart-area">
+                            <canvas id="priceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: PREDICTION CARD -->
+                    <div class="prediction-panel">
+                        <div class="forecast-card" id="forecast-card">
+                            <div class="forecast-header">
+                                <span class="forecast-label">AI Prediction</span>
+                                <span class="forecast-badge" id="signal-badge">ACTIVE BUY</span>
+                            </div>
+
+                            <div class="forecast-direction" id="forecast-direction-box">
+                                <div class="direction-arrow" id="direction-arrow">
+                                    <i class="fa-solid fa-arrow-trend-up"></i>
+                                </div>
+                                <div class="direction-text">
+                                    <span class="direction-main" id="pred-direction">BULLISH</span>
+                                    <span class="direction-sub">Tomorrow's Direction</span>
+                                </div>
+                            </div>
+
+                            <div class="confidence-gauge">
+                                <div class="gauge-ring">
+                                    <svg viewBox="0 0 120 120" class="gauge-svg">
+                                        <circle cx="60" cy="60" r="50" class="gauge-bg-ring"/>
+                                        <circle cx="60" cy="60" r="50" class="gauge-fg-ring" id="gauge-fg"/>
+                                    </svg>
+                                    <div class="gauge-center">
+                                        <span class="gauge-pct mono" id="gauge-percentage">—</span>
+                                        <span class="gauge-lbl">Up Prob.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="forecast-meta">
+                                <div class="meta-row">
+                                    <span>As of Close</span>
+                                    <span class="mono" id="as-of-date">—</span>
+                                </div>
+                                <div class="meta-row">
+                                    <span>Confidence Threshold</span>
+                                    <span class="mono" id="lbl-threshold-stat">60%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MODEL ACCURACY MINI CARD -->
+                        <div class="accuracy-card">
+                            <div class="acc-row">
+                                <span class="acc-label">Model Precision</span>
+                                <span class="acc-value mono" id="metric-precision">—</span>
+                            </div>
+                            <div class="acc-bar-track">
+                                <div class="acc-bar-fill" id="acc-bar-fill"></div>
+                                <div class="acc-baseline-marker" id="acc-baseline-marker"></div>
+                            </div>
+                            <div class="acc-row">
+                                <span class="acc-label">Baseline (Buy &amp; Hold)</span>
+                                <span class="acc-value mono" id="metric-baseline">—</span>
+                            </div>
+                            <p class="acc-diff" id="precision-comparison">—</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BAND 3: Reasons / Explainability (White Catalogue Band) -->
+        <div class="reasons-band reveal" id="reasons-section">
+            <div class="band-inner">
+                <div class="reasons-header">
+                    <h3 class="reasons-title">
+                        <i class="fa-solid fa-brain"></i>
+                        Why this prediction?
+                    </h3>
+                    <p class="reasons-sub">Top factors driving the AI's decision, ranked by importance to the model.</p>
+                </div>
+                <div class="reasons-grid" id="reasons-grid">
+                    <!-- Reason cards injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- BAND 4: Historical Backtest (Dark Storytelling Band) -->
+        <section id="backtest-section" class="backtest-band reveal">
+            <div class="band-inner">
+                <div class="section-header">
+                    <span class="section-badge">VALIDATION</span>
+                    <h2 class="section-title">Historical Backtest Results</h2>
+                    <p class="section-sub">Chronological rolling-window evaluation — trained on 2,500 days, tested on next 250 days. Zero data leakage.</p>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card highlight">
+                        <span class="metric-label">Model Precision</span>
+                        <span class="metric-big mono" id="bt-precision">—</span>
+                        <span class="metric-diff" id="bt-precision-diff">—</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Baseline</span>
+                        <span class="metric-big mono" id="bt-baseline">—</span>
+                        <span class="metric-diff">Buy &amp; Hold Rate</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Backtested Days</span>
+                        <span class="metric-big mono" id="bt-days">—</span>
+                        <span class="metric-diff">Trading days evaluated</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Signal Distribution</span>
+                        <div class="dist-bar">
+                            <div class="dist-bull" id="split-bullish-bar" style="width:50%"></div>
+                            <div class="dist-bear" id="split-bearish-bar" style="width:50%"></div>
+                        </div>
+                        <span class="metric-diff" id="prediction-split-text">Bullish: — | Bearish: —</span>
+                    </div>
+                </div>
+
+                <div class="backtest-chart-card">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">Prediction Probabilities &amp; Outcomes</h3>
+                            <p class="panel-sub">Last 250 backtested steps. Dots = daily classification result.</p>
+                        </div>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="dot green"></span> Correct</span>
+                            <span class="legend-item"><span class="dot red"></span> Incorrect</span>
+                            <span class="legend-item"><span class="line-swatch"></span> Probability</span>
+                        </div>
+                    </div>
+                    <div class="chart-area">
+                        <canvas id="backtestChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BAND 5: Model Tuning (White Catalogue Band) -->
+        <section id="model-section" class="model-band reveal">
+            <div class="band-inner">
+                <div class="section-header">
+                    <span class="section-badge">ADVANCED</span>
+                    <h2 class="section-title">Tune the Random Forest</h2>
+                    <p class="section-sub">Adjust hyperparameters and re-run prediction. Higher confidence threshold = fewer but more reliable bullish signals.</p>
+                </div>
+
+                <div class="model-form-card">
+                    <form id="config-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <div class="form-label-row">
+                                    <label for="n-estimators">Estimators (Trees)</label>
+                                    <span class="form-val mono" id="n-estimators-val">200</span>
+                                </div>
+                                <input type="range" id="n-estimators" min="10" max="500" step="10" value="200" class="range-input">
+                                <span class="form-hint">Number of decision trees in the forest.</span>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-label-row">
+                                    <label for="min-split">Min Samples Split</label>
+                                    <span class="form-val mono" id="min-split-val">50</span>
+                                </div>
+                                <input type="range" id="min-split" min="2" max="200" step="5" value="50" class="range-input">
+                                <span class="form-hint">Minimum samples needed to split a node.</span>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-label-row">
+                                    <label for="conf-threshold">Decision Threshold</label>
+                                    <span class="form-val mono" id="conf-threshold-val">0.60</span>
+                                </div>
+                                <input type="range" id="conf-threshold" min="0.5" max="0.9" step="0.05" value="0.6" class="range-input">
+                                <span class="form-hint">Minimum probability to output a BULLISH signal.</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="rolling-horizons">Rolling Horizons</label>
+                                <input type="text" id="rolling-horizons" value="2, 5, 60, 250, 1000" class="text-input">
+                                <span class="form-hint">Days for rolling ratios/trends (comma-separated).</span>
+                            </div>
+                        </div>
+
+                        <div class="form-checkbox-row">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="use-rolling" checked>
+                                <span class="checkmark"></span>
+                                Include rolling average ratios &amp; trend predictors
+                            </label>
+                        </div>
+
+                        <button type="submit" id="retrain-btn" class="retrain-btn">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                            Retrain &amp; Re-run Prediction
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </section><!-- end results-section -->
+
+    <!-- OVERLAY LOADER -->
+    <div id="loader-overlay" class="loader-overlay hidden">
+        <div class="loader-box">
+            <!-- Custom logo centered above loader -->
+            <div class="loader-brand-logo">
+                <svg class="brand-logo-svg loading-logo" viewBox="0 0 32 32" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 24L12 16L17 20L28 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 16L20 9" stroke="#494fdf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 9H20V13" stroke="#494fdf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            
+            <h2 class="loader-title" id="loader-title">Fetching Market Data...</h2>
+            <p class="loader-msg" id="loader-message">Connecting to Yahoo Finance servers.</p>
+            
+            <div class="loader-progress-track">
+                <div class="loader-progress-fill" id="loader-progress"></div>
+            </div>
+            
+            <!-- AI TIMELINE PILLS IN THE LOADER -->
+            <div class="loader-timeline">
+                <div class="timeline-item" id="tl-step-thinking">
+                    <span class="timeline-pill timeline-pill-thinking">Thinking</span>
+                </div>
+                <div class="timeline-item" id="tl-step-grep">
+                    <span class="timeline-pill timeline-pill-grep">Grep</span>
+                </div>
+                <div class="timeline-item" id="tl-step-read">
+                    <span class="timeline-pill timeline-pill-read">Read</span>
+                </div>
+                <div class="timeline-item" id="tl-step-edit">
+                    <span class="timeline-pill timeline-pill-edit">Edit</span>
+                </div>
+                <div class="timeline-item" id="tl-step-done">
+                    <span class="timeline-pill timeline-pill-done">Done</span>
+                </div>
+            </div>
+            
+            <span class="loader-ticker" id="loader-ticker-label"></span>
+        </div>
+    </div>
+
+    <!-- ERROR TOAST -->
+    <div id="error-toast" class="error-toast hidden">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="error-toast-msg">Something went wrong.</span>
+        <button onclick="document.getElementById('error-toast').classList.add('hidden')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="brand">
+                    <svg class="brand-logo-svg" viewBox="0 0 32 32" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 24L12 16L17 20L28 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 16L20 9" stroke="#494fdf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 9H20V13" stroke="#494fdf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="brand-name">StockPredict<span class="brand-accent">AI</span></span>
+                </div>
+                <p>S&amp;P 500 prediction platform powered by Random Forest &amp; Yahoo Finance.</p>
+            </div>
+            <div class="footer-links">
+                <a href="#search-section">Search</a>
+                <a href="#results-section">Analysis</a>
+                <a href="#backtest-section">Backtest</a>
+            </div>
+            <div class="footer-disclaimer">
+                <p>⚠️ Not financial advice. All predictions are mathematical simulations based on historical data. Past performance does not guarantee future results.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 StockPredict AI — Restricted to S&amp;P 500 Constituents</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
