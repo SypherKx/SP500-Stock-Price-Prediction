@@ -2128,3 +2128,14 @@ a {
         height: 300px;
     }
 }
+
+/* Inactive nav links state when results section is hidden */
+.nav-link.nav-inactive {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+}
+
+.nav-link.nav-inactive:hover {
+    color: var(--on-dark-mute) !important;
+    background-color: transparent !important;
+}

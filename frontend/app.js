@@ -29,6 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
     initForm();
     initQuickChips();
     initScrollReveal();
+    initLogoReset();
+    initNavValidation();
 });
 
 // ===== THEME TOGGLE (DEPRECATED FOR REVOLUT REDESIGN) =====
@@ -54,6 +56,76 @@ function initScrollReveal() {
 
     document.querySelectorAll(".reveal").forEach(el => {
         observer.observe(el);
+    });
+}
+
+// ===== LOGO CLICK RESET =====
+function initLogoReset() {
+    const brand = document.querySelector(".brand");
+    if (!brand) return;
+    
+    brand.addEventListener("click", (e) => {
+        e.preventDefault();
+        
+        // Reset inputs
+        const input = document.getElementById("ticker-input");
+        if (input) input.value = "";
+        
+        // Hide results
+        const resultsSection = document.getElementById("results-section");
+        if (resultsSection) {
+            resultsSection.classList.add("hidden");
+        }
+        
+        // Restore inactive state to navigation links (except search link)
+        document.querySelectorAll(".nav-link").forEach(link => {
+            if (link.getAttribute("href") !== "#search-section") {
+                link.classList.add("nav-inactive");
+            }
+        });
+        
+        // Scroll back to top
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+}
+
+// ===== NAV VALIDATION =====
+function initNavValidation() {
+    document.querySelectorAll(".nav-link").forEach(link => {
+        link.addEventListener("click", (e) => {
+            const targetId = link.getAttribute("href");
+            
+            // Allow default scrolling only for the search-section link
+            if (targetId === "#search-section") {
+                return;
+            }
+            
+            // Check if the link is inactive
+            if (link.classList.contains("nav-inactive")) {
+                e.preventDefault();
+                
+                // Scroll to search block
+                const searchSec = document.getElementById("search-section");
+                if (searchSec) {
+                    searchSec.scrollIntoView({ behavior: "smooth" });
+                }
+                
+                // Highlight input field
+                const input = document.getElementById("ticker-input");
+                const searchBox = document.getElementById("search-box");
+                if (input) {
+                    input.focus();
+                }
+                if (searchBox) {
+                    searchBox.style.borderColor = "var(--primary-bright)";
+                    searchBox.style.boxShadow = "0 0 0 2px var(--primary-bright)";
+                    setTimeout(() => {
+                        searchBox.style.borderColor = "";
+                        searchBox.style.boxShadow = "";
+                    }, 1000);
+                }
+            }
+        });
     });
 }
 
@@ -271,6 +343,11 @@ async function runFullPipeline() {
         // Show results section
         const resultsSection = document.getElementById("results-section");
         resultsSection.classList.remove("hidden");
+
+        // Activate nav links
+        document.querySelectorAll(".nav-link").forEach(link => {
+            link.classList.remove("nav-inactive");
+        });
 
         // Run all fetches concurrently
         const [infoResult, priceResult, predResult] = await Promise.allSettled([

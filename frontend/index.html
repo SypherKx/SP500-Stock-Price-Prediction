@@ -18,7 +18,7 @@
     <!-- TOP NAV -->
     <header class="top-nav">
         <div class="nav-inner">
-            <div class="brand" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <div class="brand">
                 <svg class="brand-logo-svg" viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 24L12 16L17 20L28 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M12 16L20 9" stroke="#494fdf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -29,9 +29,9 @@
             </div>
             <nav class="nav-links">
                 <a href="#search-section" class="nav-link">Search</a>
-                <a href="#results-section" class="nav-link">Analysis</a>
-                <a href="#backtest-section" class="nav-link">Backtest</a>
-                <a href="#model-section" class="nav-link">Model</a>
+                <a href="#results-section" class="nav-link nav-inactive">Analysis</a>
+                <a href="#backtest-section" class="nav-link nav-inactive">Backtest</a>
+                <a href="#model-section" class="nav-link nav-inactive">Model</a>
             </nav>
             <div class="nav-actions">
                 <a href="#search-section" class="btn-primary button-lbl-sm">Predict Now</a>
@@ -429,8 +429,8 @@
             </div>
             <div class="footer-links">
                 <a href="#search-section">Search</a>
-                <a href="#results-section">Analysis</a>
-                <a href="#backtest-section">Backtest</a>
+                <a href="#results-section" class="nav-link nav-inactive">Analysis</a>
+                <a href="#backtest-section" class="nav-link nav-inactive">Backtest</a>
             </div>
             <div class="footer-disclaimer">
                 <p>⚠️ Not financial advice. All predictions are mathematical simulations based on historical data. Past performance does not guarantee future results.</p>
